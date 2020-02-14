@@ -51,7 +51,7 @@ interface SEAnswersResponse {
 interface POResult {
 	question: SEQuestionItem,
 	answer: SEAnswerItem,
-	snippets?: string[],
+	snippets: string[],
 };
 
 export function getSnippets(body: string) {
@@ -101,7 +101,7 @@ export async function search(query: string, tag?: string) {
 	return json.items;
 }
 
-export async function getAnswers(questionId: number) {
+export async function getAnswers(questionId: number | string) {
 	let url = 'https://api.stackexchange.com/2.2/questions/' + questionId + '/answers?order=desc&sort=activity&site=stackoverflow&filter=!9Z(-wzftf';
 
 	let res = await fetch(url);
@@ -112,24 +112,17 @@ export async function getAnswers(questionId: number) {
 export async function findBest(query: string, tags: (string | undefined)[], needSnippet = false) {
 	for (let tag of tags) {
 		const questions = await search(query, tag);
+		const answers = await getAnswers(questions.map((question) => question.question_id).join(';'));
 
-		for (let question of questions) {
-			const answers = await getAnswers(question.question_id);
+		for (let answer of answers) {
+			const question = questions.find((question) => question.question_id === answer.question_id) as SEQuestionItem;
+			const snippets = getSnippets(answers[0].body_markdown);
 
-			if (needSnippet) {
-				const snippets = getSnippets(answers[0].body_markdown);
-	
-				if (snippets.length > 0) {
-					return {
-						question: question,
-						answer: answers[0],
-						snippets: snippets,
-					};
-				}
-			} else {
+			if (!needSnippet || snippets.length > 0) {
 				return {
-					question: question,
-					answer: answers[0],
+					question,
+					answer,
+					snippets,
 				};
 			}
 		}
@@ -143,28 +136,18 @@ export async function findMany(query: string, tags: (string | undefined)[], need
 
 	for (let tag of tags) {
 		const questions = await search(query, tag);
+		const answers = await getAnswers(questions.map((question) => question.question_id).join(';'));
 
-		for (let question of questions) {
-			const answers = await getAnswers(question.question_id);
+		for (let answer of answers) {
+			const question = questions.find((question) => question.question_id === answer.question_id) as SEQuestionItem;
+			const snippets = getSnippets(answers[0].body_markdown);
 
-			if (needSnippet) {
-				const snippets = getSnippets(answers[0].body_markdown);
-	
-				if (snippets.length > 0) {
-					results.push({
-						question: question,
-						answer: answers[0],
-						snippets: snippets,
-					});
-
-					if (results.length >= count) {
-						return results;
-					}
-				}
-			} else {
+			if ((!needSnippet || snippets.length > 0) &&
+				(!results.find((result) => result.question.question_id === question.question_id))) {
 				results.push({
-					question: question,
-					answer: answers[0],
+					question,
+					answer,
+					snippets,
 				});
 
 				if (results.length >= count) {

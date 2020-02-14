@@ -28,7 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
 		let languageId: string = editor.document.languageId;
 		const result = await findBest(query, tagsFromLanguageId(languageId), true);
 
-		if (result && result.snippets) {
+		if (result) {
 			const { question, snippets } = result;
 			editor.insertSnippet(new vscode.SnippetString(snippets[0]));
 
@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const questionId = parseInt(questionTitle.split(':')[0]);
 				const result = results.find((result) => result.question.question_id === questionId);
 
-				if (result && result.snippets) {
+				if (result) {
 					const { question, snippets } = result;
 					editor.insertSnippet(new vscode.SnippetString(snippets[0]));
 		
