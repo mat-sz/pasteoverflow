@@ -102,3 +102,32 @@ export async function getAnswers(questionId: number) {
 	const json = await res.json() as SEAnswersResponse;
 	return json.items;
 }
+
+export async function findBest(query: string, tags: (string | undefined)[], needSnippet = false) {
+	for (let tag of tags) {
+		const questions = await search(query, tag);
+
+		for (let question of questions) {
+			const answers = await getAnswers(question.question_id);
+
+			if (needSnippet) {
+				const snippets = getSnippets(answers[0].body_markdown);
+	
+				if (snippets.length > 0) {
+					return {
+						question: question,
+						answer: answers[0],
+						snippets: snippets,
+					};
+				}
+			} else {
+				return {
+					question: question,
+					answer: answers[0],
+				};
+			}
+		}
+	}
+
+	return null;
+}

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { search, getAnswers, getSnippets } from './StackExchange';
+import { search, getAnswers, getSnippets, findBest } from './StackExchange';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('pasteoverflow.findAndPaste', async () => {
@@ -21,55 +21,48 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		// Get current language.
-		let tryTags: (string | undefined)[] = [];
+		let tags: (string | undefined)[] = [];
 		let languageId: string | undefined = editor.document.languageId;
 
 		switch (languageId) {
 			case 'csharp':
-				tryTags.push('c#');
+				tags.push('c#');
 				break;
 			case 'cpp':
-				tryTags.push('c++');
+				tags.push('c++');
 				break;
 			case 'javascriptreact':
-				tryTags.push('reactjs');
-				tryTags.push('javascript');
+				tags.push('reactjs');
+				tags.push('javascript');
 				break;
 			case 'typescriptreact':
-				tryTags.push('reactjs');
-				tryTags.push('typescript');
-				tryTags.push('javascript');
+				tags.push('reactjs');
+				tags.push('typescript');
+				tags.push('javascript');
 				break;
 			case 'typescript':
-				tryTags.push('typescript');
-				tryTags.push('javascript');
+				tags.push('typescript');
+				tags.push('javascript');
 				break;
 			case 'dockerfile':
-				tryTags.push('docker');
+				tags.push('docker');
 				break;
 			case 'plaintext':
 				// Disable language detection.
 				break;
 			default:
-				tryTags.push(languageId);
+				tags.push(languageId);
 		}
 
-		tryTags.push(undefined);
+		tags.push(undefined);
 
-		for (let tag of tryTags) {
-			const questions = await search(query, tag);
-
-			for (let question of questions) {
-				const answers = await getAnswers(question.question_id);
-				const snippets = getSnippets(answers[0].body_markdown);
-	
-				if (snippets.length > 0) {
-					editor.insertSnippet(new vscode.SnippetString(snippets[0]));
-					vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title);
-
-					return;
-				}
-			}
+		const result = await findBest(query, tags, true);
+		if (result && result.snippets) {
+			const { question, snippets } = result;
+			editor.insertSnippet(new vscode.SnippetString(snippets[0]));
+			vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title);
+		} else {
+			vscode.window.showErrorMessage('Searched far and wide but no results were found.');
 		}
 
 	});
