@@ -142,18 +142,22 @@ export function tagsFromLanguageId(languageId: string) {
 		case 'cpp':
 			tags.push('c++');
 			break;
+		case 'scss':
+			tags.push('css');
+			tags.push('scss');
+			break;
 		case 'javascriptreact':
-			tags.push('reactjs');
 			tags.push('javascript');
+			tags.push('reactjs');
 			break;
 		case 'typescriptreact':
+			tags.push('javascript');
 			tags.push('reactjs');
 			tags.push('typescript');
-			tags.push('javascript');
 			break;
 		case 'typescript':
-			tags.push('typescript');
 			tags.push('javascript');
+			tags.push('typescript');
 			break;
 		case 'dockerfile':
 			tags.push('docker');
