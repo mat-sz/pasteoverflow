@@ -21,35 +21,57 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		// Get current language.
+		let tryTags: (string | undefined)[] = [];
 		let languageId: string | undefined = editor.document.languageId;
+
 		switch (languageId) {
 			case 'csharp':
-				languageId = 'c#';
+				tryTags.push('c#');
 				break;
 			case 'cpp':
-				languageId = 'c++';
+				tryTags.push('c++');
 				break;
 			case 'javascriptreact':
-				languageId = 'reactjs';
+				tryTags.push('reactjs');
+				tryTags.push('javascript');
+				break;
+			case 'typescriptreact':
+				tryTags.push('reactjs');
+				tryTags.push('typescript');
+				tryTags.push('javascript');
+				break;
+			case 'typescript':
+				tryTags.push('typescript');
+				tryTags.push('javascript');
 				break;
 			case 'dockerfile':
-				languageId = 'docker';
+				tryTags.push('docker');
 				break;
 			case 'plaintext':
 				// Disable language detection.
-				languageId = undefined;
 				break;
-		}
-		
-		const questions = await search(query, languageId);
-		const answers = await getAnswers(questions[0].question_id);
-		const snippets = getSnippets(answers[0].body_markdown);
-
-		if (snippets.length > 0) {
-			editor.insertSnippet(new vscode.SnippetString(snippets[0]));
+			default:
+				tryTags.push(languageId);
 		}
 
-		vscode.window.showInformationMessage('Pasted snippet from question: ' + questions[0].title);
+		tryTags.push(undefined);
+
+		for (let tag of tryTags) {
+			const questions = await search(query, tag);
+
+			for (let question of questions) {
+				const answers = await getAnswers(question.question_id);
+				const snippets = getSnippets(answers[0].body_markdown);
+	
+				if (snippets.length > 0) {
+					editor.insertSnippet(new vscode.SnippetString(snippets[0]));
+					vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title);
+
+					return;
+				}
+			}
+		}
+
 	});
 
 	context.subscriptions.push(disposable);
