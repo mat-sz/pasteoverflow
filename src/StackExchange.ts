@@ -1,4 +1,9 @@
-export interface SEOwner {
+import { AllHtmlEntities } from 'html-entities';
+import fetch from 'node-fetch';
+
+const entities = new AllHtmlEntities();
+
+interface SEOwner {
 	reputation: number;
 	user_id: number;
 	user_type: string;
@@ -7,7 +12,7 @@ export interface SEOwner {
 	link: string;
 };
 
-export interface SEQuestionItem {
+interface SEQuestionItem {
 	tags: string[];
 	owner: SEOwner;
 	is_answered: boolean;
@@ -22,11 +27,11 @@ export interface SEQuestionItem {
 	body: string;
 };
 
-export interface SEQuestionResponse {
+interface SEQuestionResponse {
 	items: SEQuestionItem[];
 };
 
-export interface SEAnswerItem {
+interface SEAnswerItem {
 	tags: string[];
 	owner: SEOwner;
 	is_accepted: boolean;
@@ -39,6 +44,61 @@ export interface SEAnswerItem {
 	body_markdown: string;
 };
 
-export interface SEAnswersResponse {
+interface SEAnswersResponse {
 	items: SEAnswerItem[];
 };
+
+export function getSnippets(body: string) {
+	let snippets: string[] = [];
+
+	let snippet = '';
+	let snippetMode = 'off';
+	
+	for (let line of body.split('\n')) {
+		// ``` syntax:
+		if (line.includes('```') && snippetMode === 'tick') {
+			snippetMode = 'off';
+		} else if (line.startsWith('```') && snippetMode === 'off') {
+			snippetMode = 'tick';
+		}
+
+		// 4 spaces syntax:
+		if (line.startsWith('    ')) {
+			snippetMode = 'spaces';
+		} else if (snippetMode === 'spaces') {
+			snippetMode = 'off';
+		}
+
+		if (snippetMode === 'off') {
+			if (snippet !== '') {
+				snippets.push(entities.decode(snippet).replace(/\$/g, '\\$'));
+				snippet = '';
+			}
+		} else {
+			snippet += line.replace('```', '').replace('    ', '') + '\n';
+		}
+	}
+
+	return snippets;
+}
+
+export async function search(query: string, tag?: string) {
+	let url = 'https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=relevance&accepted=True&answers=1&site=stackoverflow';
+	url += '&q=' + encodeURIComponent(query);
+
+	if (tag) {
+		url += '&tagged=' + encodeURIComponent(tag);
+	}
+
+	let res = await fetch(url);
+	const json = await res.json() as SEQuestionResponse;
+	return json.items;
+}
+
+export async function getAnswers(questionId: number) {
+	let url = 'https://api.stackexchange.com/2.2/questions/' + questionId + '/answers?order=desc&sort=activity&site=stackoverflow&filter=!9Z(-wzftf';
+
+	let res = await fetch(url);
+	const json = await res.json() as SEAnswersResponse;
+	return json.items;
+}

@@ -1,10 +1,6 @@
 import * as vscode from 'vscode';
-import fetch from 'node-fetch';
-import { AllHtmlEntities } from 'html-entities';
 
-import { SEAnswersResponse, SEQuestionResponse } from './StackExchange';
-
-const entities = new AllHtmlEntities();
+import { search, getAnswers, getSnippets } from './StackExchange';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('pasteoverflow.findAndPaste', async () => {
@@ -20,11 +16,12 @@ export function activate(context: vscode.ExtensionContext) {
 			placeHolder: 'Search query',
 		});
 
-		let url = 'https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=relevance&accepted=True&answers=1&site=stackoverflow';
-		url += '&q=' + query;
+		if (!query) {
+			return;
+		}
 
 		// Get current language.
-		let languageId: string | null = editor.document.languageId;
+		let languageId: string | undefined = editor.document.languageId;
 		switch (languageId) {
 			case 'csharp':
 				languageId = 'c#';
@@ -40,64 +37,19 @@ export function activate(context: vscode.ExtensionContext) {
 				break;
 			case 'plaintext':
 				// Disable language detection.
-				languageId = null;
+				languageId = undefined;
 				break;
 		}
-
-		if (languageId) {
-			url += '&tagged=' + languageId;
-		}
 		
-		// Get list of questions matching our query.
-		let res = await fetch(url);
-		const questions = await res.json() as SEQuestionResponse;
-
-		// TODO: if none, try without tags, then return error.
-
-		// Get answers.
-		url = 'https://api.stackexchange.com/2.2/questions/' + questions.items[0].question_id + '/answers?order=desc&sort=activity&site=stackoverflow&filter=!9Z(-wzftf';
-		
-		res = await fetch(url);
-		const answers = await res.json() as SEAnswersResponse;
-		
-		// Find the longest code snippet.
-		const body = answers.items[0].body_markdown;
-
-		let snippets = [];
-
-		let snippet = '';
-		let snippetMode = 'off';
-		
-		for (let line of body.split('\n')) {
-			// ``` syntax:
-			if (line.includes('```') && snippetMode === 'tick') {
-				snippetMode = 'off';
-			} else if (line.startsWith('```') && snippetMode === 'off') {
-				snippetMode = 'tick';
-			}
-
-			// 4 spaces syntax:
-			if (line.startsWith('    ')) {
-				snippetMode = 'spaces';
-			} else if (snippetMode === 'spaces') {
-				snippetMode = 'off';
-			}
-
-			if (snippetMode === 'off') {
-				if (snippet !== '') {
-					snippets.push(entities.decode(snippet).replace(/\$/g, '\\$'));
-					snippet = '';
-				}
-			} else {
-				snippet += line.replace('```', '').replace('    ', '') + '\n';
-			}
-		}
+		const questions = await search(query, languageId);
+		const answers = await getAnswers(questions[0].question_id);
+		const snippets = getSnippets(answers[0].body_markdown);
 
 		if (snippets.length > 0) {
 			editor.insertSnippet(new vscode.SnippetString(snippets[0]));
 		}
 
-		vscode.window.showInformationMessage('Pasted snippet from question: ' + questions.items[0].title);
+		vscode.window.showInformationMessage('Pasted snippet from question: ' + questions[0].title);
 	});
 
 	context.subscriptions.push(disposable);
