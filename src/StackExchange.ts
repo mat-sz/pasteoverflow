@@ -48,6 +48,12 @@ interface SEAnswersResponse {
 	items: SEAnswerItem[];
 };
 
+interface POResult {
+	question: SEQuestionItem,
+	answer: SEAnswerItem,
+	snippets?: string[],
+};
+
 export function getSnippets(body: string) {
 	let snippets: string[] = [];
 
@@ -130,6 +136,45 @@ export async function findBest(query: string, tags: (string | undefined)[], need
 	}
 
 	return null;
+}
+
+export async function findMany(query: string, tags: (string | undefined)[], needSnippet = false, count = 5) {
+	let results: POResult[] = [];
+
+	for (let tag of tags) {
+		const questions = await search(query, tag);
+
+		for (let question of questions) {
+			const answers = await getAnswers(question.question_id);
+
+			if (needSnippet) {
+				const snippets = getSnippets(answers[0].body_markdown);
+	
+				if (snippets.length > 0) {
+					results.push({
+						question: question,
+						answer: answers[0],
+						snippets: snippets,
+					});
+
+					if (results.length >= count) {
+						return results;
+					}
+				}
+			} else {
+				results.push({
+					question: question,
+					answer: answers[0],
+				});
+
+				if (results.length >= count) {
+					return results;
+				}
+			}
+		}
+	}
+
+	return results;
 }
 
 export function tagsFromLanguageId(languageId: string) {

@@ -11,14 +11,24 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:pasteoverflow.findAndPaste"
+		"onCommand:pasteoverflow.findAndPaste",
+		"onCommand:pasteoverflow.findAndOpen",
+		"onCommand:pasteoverflow.findAndPasteLucky"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "pasteoverflow.findAndPaste",
-				"title": "PasteOverflow: Find and paste (StackOverflow)"
+				"title": "PasteOverflow: Search and paste"
+			},
+			{
+				"command": "pasteoverflow.findAndOpen",
+				"title": "PasteOverflow: Search and open"
+			},
+			{
+				"command": "pasteoverflow.findAndPasteLucky",
+				"title": "PasteOverflow: Search and paste (I'm feeling lucky)"
 			}
 		]
 	},
