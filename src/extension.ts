@@ -27,11 +27,14 @@ export function activate(context: vscode.ExtensionContext) {
 		if (result && result.snippets) {
 			const { question, snippets } = result;
 			editor.insertSnippet(new vscode.SnippetString(snippets[0]));
-			vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title);
+
+			const option = await vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title, 'Open in browser');
+			if (option === 'Open in browser') {
+				vscode.env.openExternal(vscode.Uri.parse(question.link));
+			}
 		} else {
 			vscode.window.showErrorMessage('Searched far and wide but no results were found.');
 		}
-
 	});
 
 	context.subscriptions.push(disposable);
