@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { search, getAnswers, getSnippets, findBest } from './StackExchange';
+import { findBest, tagsFromLanguageId } from './StackExchange';
 
 export function activate(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('pasteoverflow.findAndPaste', async () => {
@@ -21,42 +21,9 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		// Get current language.
-		let tags: (string | undefined)[] = [];
-		let languageId: string | undefined = editor.document.languageId;
+		let languageId: string = editor.document.languageId;
+		const result = await findBest(query, tagsFromLanguageId(languageId), true);
 
-		switch (languageId) {
-			case 'csharp':
-				tags.push('c#');
-				break;
-			case 'cpp':
-				tags.push('c++');
-				break;
-			case 'javascriptreact':
-				tags.push('reactjs');
-				tags.push('javascript');
-				break;
-			case 'typescriptreact':
-				tags.push('reactjs');
-				tags.push('typescript');
-				tags.push('javascript');
-				break;
-			case 'typescript':
-				tags.push('typescript');
-				tags.push('javascript');
-				break;
-			case 'dockerfile':
-				tags.push('docker');
-				break;
-			case 'plaintext':
-				// Disable language detection.
-				break;
-			default:
-				tags.push(languageId);
-		}
-
-		tags.push(undefined);
-
-		const result = await findBest(query, tags, true);
 		if (result && result.snippets) {
 			const { question, snippets } = result;
 			editor.insertSnippet(new vscode.SnippetString(snippets[0]));

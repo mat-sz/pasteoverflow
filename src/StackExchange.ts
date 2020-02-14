@@ -131,3 +131,40 @@ export async function findBest(query: string, tags: (string | undefined)[], need
 
 	return null;
 }
+
+export function tagsFromLanguageId(languageId: string) {
+	let tags: (string | undefined)[] = [];
+
+	switch (languageId) {
+		case 'csharp':
+			tags.push('c#');
+			break;
+		case 'cpp':
+			tags.push('c++');
+			break;
+		case 'javascriptreact':
+			tags.push('reactjs');
+			tags.push('javascript');
+			break;
+		case 'typescriptreact':
+			tags.push('reactjs');
+			tags.push('typescript');
+			tags.push('javascript');
+			break;
+		case 'typescript':
+			tags.push('typescript');
+			tags.push('javascript');
+			break;
+		case 'dockerfile':
+			tags.push('docker');
+			break;
+		case 'plaintext':
+			// Disable language detection.
+			break;
+		default:
+			tags.push(languageId);
+	}
+
+	tags.push(undefined);
+	return tags;
+}
