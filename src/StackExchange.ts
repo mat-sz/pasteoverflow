@@ -85,7 +85,7 @@ export function getSnippets(body: string) {
 		}
 	}
 
-	return snippets;
+	return snippets.sort((a, b) => b.length - a.length);
 }
 
 export async function search(query: string, tag?: string) {
