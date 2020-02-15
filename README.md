@@ -1,9 +1,11 @@
 # pasteoverflow
 
+[**Download the extension from the Marketplace**](https://marketplace.visualstudio.com/items?itemName=matsz.pasteoverflow)
+
 Search for and paste StackOverflow snippets directly from your Command Palette.
 
 <p align="center">
-    <a href="https://drop.lol/">
+    <a href="https://marketplace.visualstudio.com/items?itemName=matsz.pasteoverflow">
         <img src="https://raw.githubusercontent.com/mat-sz/pasteoverflow/master/pasteoverflow.gif" alt="Screenshot">
     </a>
 </p>
