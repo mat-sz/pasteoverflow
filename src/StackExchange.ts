@@ -149,11 +149,11 @@ export async function findMany(query: string, tags: (string | undefined)[], need
 					answer,
 					snippets,
 				});
-
-				if (results.length >= count) {
-					return results;
-				}
 			}
+		}
+
+		if (results.length >= count) {
+			return results;
 		}
 	}
 
