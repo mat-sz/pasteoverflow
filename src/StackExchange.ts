@@ -12,7 +12,7 @@ interface SEOwner {
 	link: string;
 };
 
-interface SEQuestionItem {
+export interface SEQuestionItem {
 	tags: string[];
 	owner: SEOwner;
 	is_answered: boolean;

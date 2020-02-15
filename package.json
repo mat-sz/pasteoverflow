@@ -32,7 +32,22 @@
 				"command": "pasteoverflow.findAndPasteLucky",
 				"title": "PasteOverflow: Search and paste (I'm feeling lucky)"
 			}
-		]
+		],
+		"configuration": {
+			"title": "PasteOverflow",
+			"properties": {
+				"pasteoverflow.prependLinkComment": {
+					"type": "boolean",
+					"default": true,
+					"description": "Prepend a comment with the link to the StackOverflow question before the snippet."
+				},
+				"pasteoverflow.prependTitleComment": {
+					"type": "boolean",
+					"default": true,
+					"description": "Prepend a comment with the title of the StackOverflow question before the snippet."
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",

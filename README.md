@@ -14,6 +14,11 @@ Search for and paste StackOverflow snippets directly from your Command Palette.
 
 This extension allows for quick searching and pasting code snippets directly from StackOverflow.
 
+## Configuration
+
+* `pasteoverflow.prependLinkComment` (boolean) - Prepend a comment with the link to the StackOverflow question before the snippet.
+* `pasteoverflow.prependTitleComment` (boolean) - Prepend a comment with the title of the StackOverflow question before the snippet.
+
 ## Known Issues
 
 * None.

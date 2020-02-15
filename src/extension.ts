@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { findBest, tagsFromLanguageId, findMany } from './StackExchange';
+import { findBest, tagsFromLanguageId, findMany, SEQuestionItem } from './StackExchange';
 
 async function editorQuery() {
 	if (!vscode.window.activeTextEditor) {
@@ -12,6 +12,26 @@ async function editorQuery() {
 	return await vscode.window.showInputBox({
 		placeHolder: 'Search query',
 	});
+}
+
+function createSnippet(question: SEQuestionItem, code: string) {
+	const config = vscode.workspace.getConfiguration('pasteoverflow');
+	let snippet = '';
+
+	// TODO: Wait for https://github.com/microsoft/vscode/issues/2871
+	// Currently it's not possible to find the right comment beginning
+	// sequence without hardcoding them all.
+	if (config.get<boolean>('prependTitleComment') === true) {
+		snippet += '// ' + question.title + '\n';
+	}
+
+	if (config.get<boolean>('prependLinkComment') === true) {
+		snippet += '// ' + question.link + '\n';
+	}
+
+	snippet += code;
+
+	return new vscode.SnippetString(snippet);
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -30,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		if (result) {
 			const { question, snippets } = result;
-			editor.insertSnippet(new vscode.SnippetString(snippets[0]));
+			editor.insertSnippet(createSnippet(question, snippets[0]));
 
 			const option = await vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title, 'Open in browser');
 			if (option === 'Open in browser') {
@@ -67,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				if (result) {
 					const { question, snippets } = result;
-					editor.insertSnippet(new vscode.SnippetString(snippets[0]));
+					editor.insertSnippet(createSnippet(question, snippets[0]));
 		
 					const option = await vscode.window.showInformationMessage('Pasted snippet from question: ' + question.title, 'Open in browser');
 					if (option === 'Open in browser') {
