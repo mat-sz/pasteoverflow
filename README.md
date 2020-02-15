@@ -25,6 +25,12 @@ This extension allows for quick searching and pasting code snippets directly fro
 
 ## Release Notes
 
+### 0.0.3
+
+- Added `prependLinkComment` and `prependTitleComment` configuration options.
+
+### 0.0.2
+
 ### 0.0.1
 
 * Initial release.
