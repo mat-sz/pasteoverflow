@@ -117,6 +117,7 @@ export async function findBest(query: string, tags: (string | undefined)[], need
 		for (let answer of answers) {
 			const question = questions.find((question) => question.question_id === answer.question_id) as SEQuestionItem;
 			const snippets = getSnippets(answers[0].body_markdown);
+			question.title = entities.decode(question.title);
 
 			if (!needSnippet || snippets.length > 0) {
 				return {
@@ -141,6 +142,7 @@ export async function findMany(query: string, tags: (string | undefined)[], need
 		for (let answer of answers) {
 			const question = questions.find((question) => question.question_id === answer.question_id) as SEQuestionItem;
 			const snippets = getSnippets(answers[0].body_markdown);
+			question.title = entities.decode(question.title);
 
 			if ((!needSnippet || snippets.length > 0) &&
 				(!results.find((result) => result.question.question_id === question.question_id))) {
