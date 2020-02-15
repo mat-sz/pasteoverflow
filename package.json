@@ -3,6 +3,7 @@
 	"displayName": "pasteoverflow",
 	"description": "Paste StackOverflow snippets directly from your Command Palette.",
 	"version": "0.0.1",
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
